@@ -1,0 +1,32 @@
+---
+title: "Assignment 1"
+author: "Matt Kostoff"
+date: "`r Sys.Date()`"
+output:
+  word_document: default
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+## R Markdown
+#Question 1: Downloaded "Pharmaceuticals" file from course Canvas page
+```{r}
+# Question 2: Imported data
+library(readr)
+Pharmaceuticals <- read_csv("C:/Users/Kostoff/Desktop/Pharmaceuticals.csv")
+#Question 3: Descriptive Statistics
+mean(Pharmaceuticals$Market_Cap)
+median(Pharmaceuticals$Rev_Growth)
+range(Pharmaceuticals$Net_Profit_Margin)
+table(Pharmaceuticals$Location)
+
+#Question 4: Transformation
+sqrt(Pharmaceuticals$Market_Cap)
+```
+## Question 5: Plots
+
+```{r}
+hist(Pharmaceuticals$Net_Profit_Margin)
+plot(Pharmaceuticals$Market_Cap, main = "Market Cap Scatterplot")
+```
