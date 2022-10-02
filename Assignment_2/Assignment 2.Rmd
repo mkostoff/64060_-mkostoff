@@ -1,0 +1,120 @@
+---
+title: "Assignment_2"
+author: "Matt Kostoff"
+date: "`r Sys.Date()`"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+
+## Question #1
+## Partition Data into training (60%) and validation (40%)
+```{r}
+library (class)
+library(caret)
+library (ISLR)
+bank.df<-read.csv("universalbank.csv")
+bank.df<-subset(bank.df, select=-ID)
+bank.df<-subset(bank.df, select=-ZIP.Code)
+head(bank.df)
+set.seed(123)
+train.index=(createDataPartition(bank.df$Age, p = 0.6, list=FALSE))
+train.df<-bank.df[train.index,]
+valid.df<-bank.df[-train.index,]
+```
+## Normalization
+```{r}
+train.norm.df<-train.df
+valid.norm.df<-valid.df
+bank.norm.df<-bank.df
+norm.values<-preProcess(train.df[, -8], method=c("center", "scale"))
+train.norm.df[, -8]<-predict(norm.values, train.df[,-8])
+valid.norm.df[, -8]<-predict(norm.values, valid.df[, -8])
+bank.norm.df[, -8]<-predict(norm.values, bank.df[, -8])
+```
+## Classification of customer
+```{r}
+library(FNN)
+new.df<-data.frame(40,10,84,2,2,0,0,0,0,1,1)
+names(new.df)<-names(train.norm.df)[-8]
+new.norm.values<-preProcess(new.df, method=c("center","scale"))
+new.norm.df<-predict(new.norm.values, newdata=new.df)
+new.knn.pred <- class::knn(train = train.norm.df[,-8], test = new.norm.df, cl = train.df$Personal.Loan, k = 1)
+new.knn.pred
+# Customer is classified as Personal Loan = 0, which means they would not accept
+```
+## Question #2
+```{r}
+accuracy.df <- data.frame(k = seq(1, 14, 1), RSME = rep (0, 14))
+for(i in 1:14){
+knn.pred<-class::knn(train = train.norm.df[,-8],test = valid.norm.df[,-8], cl = train.df[,8], k = i)
+accuracy.df[i,2]<-RMSE(as.numeric(as.character(knn.pred)),valid.df[,8])
+}
+accuracy.df
+#k=3 is the next lowest RSME value, so it provides a good blanace between overfitting and ignoring the predictor information
+```
+## Question #3 - confusion matrix for validation data
+```{r}
+Train_Predictors<-train.df[,-8]
+Val_Predcitors<-valid.df[,-8]
+Val_Predcitors<-valid.df[,-8]
+Train_labels<-train.df[,8]
+Val_labels<-valid.df[,8]
+Predicted_Val_labels<-knn(Train_Predictors,Val_Predcitors,cl=Train_labels, k=3)
+head(Predicted_Val_labels)
+library("gmodels")
+CrossTable(x=Val_labels, y=Predicted_Val_labels, prop.chisq = FALSE)
+```
+
+## Question #4
+#Classify customer using best k, which is k = 3
+```{r}
+library(FNN)
+new.df<-data.frame(40,10,84,2,2,0,0,0,0,1,1)
+names(new.df)<-names(train.norm.df)[-8]
+new.norm.values<-preProcess(new.df, method=c("center","scale"))
+new.norm.df<-predict(new.norm.values, newdata=new.df)
+new.knn.pred <- class::knn(train = train.norm.df[,-8], test = new.norm.df, cl = train.df$Personal.Loan, k = 3)
+new.knn.pred
+# Customer is classified as Personal Loan = 0, which means they would not accept
+```
+## Question #5 - repartition (50:30:20%)
+```{r}
+set.seed(123)
+train.rows<-sample(rownames(bank.df), dim(bank.df)[1]*0.5)
+valid.rows<-sample(setdiff(rownames(bank.df), train.rows), dim(bank.df)[1]*0.3)
+test.rows<-setdiff(rownames(bank.df), union(train.rows, valid.rows))
+train.df<-bank.df[train.rows,]
+valid.df<-bank.df[valid.rows,]
+test.df<-bank.df[test.rows,]
+#Normalize
+train.norm.df<-train.df
+valid.norm.df<-valid.df
+test.norm.df<-test.df
+norm.values<-preProcess(train.df[, -8], method=c("center", "scale"))
+train.norm.df[, -8]<-predict(norm.values, train.df[,-8])
+valid.norm.df[, -8]<-predict(norm.values, valid.df[, -8])
+test.norm.df[, -8]<-predict(norm.values, test.df[, -8])
+#Confusion Matrix - Validation
+Train_Predictors<-train.df[,-8]
+Val_Predcitors<-valid.df[,-8]
+Val_Predcitors<-valid.df[,-8]
+Train_labels<-train.df[,8]
+Val_labels<-valid.df[,8]
+Predicted_Val_labels<-knn(Train_Predictors,Val_Predcitors,cl=Train_labels, k=3)
+head(Predicted_Val_labels)
+library("gmodels")
+CrossTable(x=Val_labels, y=Predicted_Val_labels, prop.chisq = FALSE)
+#Confusion Matrix - Test
+Train_Predictors<-train.df[,-8]
+Test_Predcitors<-test.df[,-8]
+Test_Predcitors<-test.df[,-8]
+Train_labels<-train.df[,8]
+Test_labels<-test.df[,8]
+Predicted_Test_labels<-knn(Train_Predictors,Test_Predcitors,cl=Train_labels, k=3)
+head(Predicted_Test_labels)
+library("gmodels")
+CrossTable(x=Test_labels, y=Predicted_Test_labels, prop.chisq = FALSE)
+```
+## Comments
