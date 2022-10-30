@@ -1,0 +1,54 @@
+---
+title: "Assignment_4"
+author: "Matt Kostoff"
+date: "`r Sys.Date()`"
+output:
+  word_document: default
+  html_document: default
+---
+
+## Cluster analysis
+```{r}
+library(tidyverse)
+library(factoextra)
+library(ISLR)
+set.seed(123)
+Pharmaceuticals<-read.csv("Pharmaceuticals.csv")
+Pharm.df<-Pharmaceuticals[,c(3,4,5,6,7,8,9,10,11)]
+summary(Pharm.df)
+# scaling the data frame
+view(Pharm.df)
+Pharm.df<-scale(Pharm.df)
+distance<-get_dist(Pharm.df)
+fviz_dist(distance)
+```
+
+## Determining K
+```{r}
+# "Elbow" Method
+fviz_nbclust(Pharm.df, kmeans, method = "wss")
+# Average Silhouette Method
+fviz_nbclust(Pharm.df, kmeans, method = "silhouette")
+# optimal K = 5
+```
+## K-Means
+```{r}
+k5<-kmeans(Pharm.df, centers = 5, nstart = 25)
+k5$centers
+k5$size
+fviz_cluster(k5, data = Pharm.df)
+```
+
+## Other Distances
+```{r}
+library(flexclust)
+k5 = kcca(Pharm.df, k=5, kccaFamily("kmedians"))
+k5
+clusters_index <- predict(k5)
+dist(k5@centers)
+image(k5)
+points(Pharm.df, col=clusters_index, pch=19, cex=0.3)
+```
+
+## Using numerical variables (1-9), there is no clear pattern in the clusters with respect to variables 10-12
+
