@@ -1,0 +1,50 @@
+---
+title: "Assignment_5"
+author: "Matt Kostoff"
+date: "`r Sys.Date()`"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+
+## Data Preprocessing
+```{r}
+Cereal<-read.csv("cereals.csv")
+Cereal<-na.omit(Cereal)
+row.names(Cereal) <- Cereal[,1]
+Cereal <- Cereal[,c(-1,-2,-3)]
+head(Cereal)
+Cereal<-scale(Cereal)
+head(Cereal)
+```
+## Apply hiearchical clustering
+```{r}
+# Euclidean distance
+d <- dist(Cereal, method = "euclidean")
+hc1<-hclust(d, method = "complete")
+plot(hc1, cex =0.6, hang = -1)
+
+#Agnes
+library(cluster)
+hc_single<-agnes(Cereal, method = "single")
+hc_complete<-agnes(Cereal, method = "complete")
+hc_average<-agnes(Cereal, method = "average")
+hc_ward<-agnes(Cereal, method = "ward")
+print(hc_single$ac)
+print(hc_complete$ac)
+print(hc_average$ac)
+print(hc_ward$ac)
+#Ward is the best method
+pltree(hc_ward, cex = 0.6, hang = -1, main = "dendrogram of agnes")
+# cutting dendrograms
+d <- dist(Cereal, method = "euclidean")
+hc_ward<-hclust(d, method = "ward.D")
+plot(hc_ward, cex=0.6)
+rect.hclust(hc_ward, k=7, border = 1:7)
+```
+
+## How many clusters to choose? - # based on running various K values, would choose k=7 as best fit
+
+
+## "Healthy Cereals" - should data be normalized? - # Generally data should be normalized as the distance measures can be sensitive to scale and highly influenced by larger scales. But, it could depend on how "healthy cereal" is defined. For example, in this definition the value for a variable such as "sugars" may need to have a larger influence in how they are clustered.
