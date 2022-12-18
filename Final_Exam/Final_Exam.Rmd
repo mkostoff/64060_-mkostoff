@@ -1,0 +1,39 @@
+---
+title: "Final_Exam"
+author: "Matt Kostoff"
+date: "`r Sys.Date()`"
+output:
+  word_document: default
+  html_document: default
+---
+## Pharmacy Graduates
+```{r}
+Graduates<-read.csv("graduates.csv")
+#Total annual graduates
+sum(Graduates$Total)
+GradOrder<-Graduates[order(Graduates$Total,decreasing=TRUE),]
+View(GradOrder)
+write.csv(GradOrder, "gradorder.csv", row.names = F)
+```
+
+## Residency Positions
+```{r}
+residency<-read.csv("residencies.csv")
+residencies<-residency[!is.na(residency$Residency...Number.Positions),]
+library(dplyr)
+#Annual Residency Positions Available
+sum(residencies$Residency...Number.Positions)
+mean(residencies$Residency...Number.Positions)
+median(residencies$Residency...Number.Positions)
+max(residencies$Residency...Number.Positions)
+quantile(residencies$Residency...Number.Positions, 0.75)
+#Number of resident program in each state
+agg_tbl<-residencies %>% group_by(State.Name) %>% summarise(total_count=n(),.groups='drop')
+ResOrder<-agg_tbl[order(agg_tbl$total_count,decreasing=TRUE),]
+View(ResOrder)
+#Total Number of Programs
+sum(ResOrder$total_count)
+write.csv(ResOrder, "resorder.csv", row.names = F)
+```
+
+
